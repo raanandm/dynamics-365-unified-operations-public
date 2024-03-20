@@ -56,6 +56,24 @@ One typical use of batch servers is to load balance jobs across multiple servers
 Because batch servers are also active AOS instances that service requests from the client and other associated components, you must carefully determine when an AOS instance should be available to process batches. 
 
 
+## Understanding Batch server restarts
+During routine maintenance activities such as patching, there may be temporary interruptions to batch services. To understand the impact of maintenance activities and access known maintenance schedules, please refer to the following articles:
+
+- [Operating System Maintenance Schedule](https://learn.microsoft.com/dynamics365/fin-ops-core/dev-itpro/deployment/plannedmaintenance-selfservice#what-is-the-schedule-for-operating-system-maintenance) - Learn more about planned operating system maintenance schedules.
+- [Experience during the nZDT Maintenance Window](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/deployment/plannedmaintenance-selfservice#batch-service) - Discover insights into system behavior during the nZDT maintenance window.
+
+Additionally, it's recommended to utilize the 'Abort' option with the [Enhanced Batch Abort feature](https://learn.microsoft.com/dynamics365/fin-ops-core/dev-itpro/sysadmin/batch-abort). This triggers a restart of the Batch server specific to the server where the Batch job was executing.
+
+Please note that Batch servers may also restart due to server crashes, which could potentially be influenced by any batch job in execution at that time. Detailed crash information is available on LCS; please refer to [this](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/lifecycle-services/monitoring-diagnostics#raw-information-logs) for further details.
+
+Restarts could also be observed in the event of infrastructure problems leading to internal failover, measures such as auto-scaling and capacity management are employed to ensure optimal environment performance and availability.
+
+Please ensure to retry batch jobs affected by interruptions, and consider implementing retry mechanisms within your batch job logic for enhanced reliability. Detailed documentation on how to implement retry logic can be found [here](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/sysadmin/retryable-batch).
+
+> [!NOTE]
+> - Ensure that you are on the [supported version](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/get-started/public-preview-releases) to maintain system stability and compatibility.
+> - Review any customizations and file uploads to mitigate potential impacts on batch job execution and system performance.
+
 ## Walkthroughs
 The following walkthroughs describe how tasks are processed, and how batch groups can be used to associate batch jobs with batch servers.
 
@@ -104,6 +122,14 @@ You can configure AOS2 and AOS3 to process tasks from other batch groups. These 
 ### Batch excessive tasks configuration (Batch throttling)
 
 Batch throttling can prevent excessive tasks by limiting the average number of executions of a certain batch class per minute. The default upper-bound is 60 tasks per minute. After that, batch framework will suspend the execution of classes for the offending class for another minute, to prevent that specific class from monopolizing the system resources.
+
+When the available resources within your system, particularly SQL resources, CPU, and memory allocated to Batch Application Object Server (AOS), are nearing their capacity limits, we implement a delay in the execution of new batch tasks. This delay allows the system to manage its resources more efficiently by ensuring that the existing workload doesn't overwhelm the system.
+
+By delaying the execution of new batch tasks until the resource levels return to normal, we are effectively employing a guardrail mechanism. This guardrail is put in place to safeguard the performance and stability of your environment, ensuring that it operates optimally even during periods of increased demand or resource constraints.
+
+The purpose of this approach is to maintain a balance between the workload demands and the available resources. By temporarily pausing the initiation of new batch tasks until resources are adequately available, we prevent potential performance degradation or system instability that could occur if the system were to become overloaded.
+
+In essence, this delay mechanism serves as a proactive measure to optimize resource utilization and ensure that your environment continues to perform at its best, even under challenging conditions.
 
 > [!NOTE]
 > The batch framework is able to detect instances when there are no non-throttled tasks to be scheduled and executed at any given time. When this occurs, the batch will try to fetch batch tasks from the throttled classes queue to prevent resources from being idle.
