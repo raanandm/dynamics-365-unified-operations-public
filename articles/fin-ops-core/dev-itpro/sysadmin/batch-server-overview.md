@@ -131,6 +131,8 @@ The purpose of this approach is to maintain a balance between the workload deman
 
 In essence, this delay mechanism serves as a proactive measure to optimize resource utilization and ensure that your environment continues to perform at its best, even under challenging conditions.
 
+To successfully diagnose performance issues using LCS, visit [Troubleshooting SQL performance](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/lifecycle-services/performancetroubleshooting#details) for more details.
+
 > [!NOTE]
 > The batch framework is able to detect instances when there are no non-throttled tasks to be scheduled and executed at any given time. When this occurs, the batch will try to fetch batch tasks from the throttled classes queue to prevent resources from being idle.
 
